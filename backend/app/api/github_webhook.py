@@ -8,6 +8,10 @@ from backend.app.config import settings
 from backend.app.database.connection import get_db
 from backend.app.models.pull_request import PullRequestEvent
 from backend.app.schemas.pull_request import MergeHistoryResponse
+from backend.app.services.pull_request_service import sync_pull_request
+
+from backend.app.models.pull_request_record import PullRequest
+from backend.app.schemas.pull_request import PullRequestListResponse
 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -122,8 +126,20 @@ async def github_webhook(req: Request , db : Session = Depends(get_db)):
         delivery_id=delivery_id
         )
         try:
+            # Save the individual webhook event.
             db.add(db_event)
+
+            # Update the latest state of this pull request.
+            sync_pull_request(
+                db=db,
+                repository=repo_name,
+                pr_number=pull_request_number,
+                payload=payload
+            )
+
+            # Save both database changes together.
             db.commit()
+
             db.refresh(db_event)
 
         except IntegrityError:
@@ -186,4 +202,53 @@ def get_merge_history(repository:str =None,page:int= Query(default=1, ge=1),limi
         "page" :  page,
         "limit" : limit,
         "merge_history" : merge_events
+    }
+
+
+
+@router.get("/pull-requests",response_model=PullRequestListResponse)
+def get_all_pull_requests(
+    repository: str | None = None,
+    state: str | None = None,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=10, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    query = db.query(PullRequest)
+
+    # Optional repository filter.
+    if repository:
+        query = query.filter(
+            PullRequest.repository == repository
+        )
+
+    # Optional state filter.
+    if state:
+        if state not in ("open", "closed"):
+            raise HTTPException(
+                status_code=400,
+                detail="State must be 'open' or 'closed'."
+            )
+
+        query = query.filter(
+            PullRequest.state == state
+        )
+
+    total_records = query.count()
+
+    skip = (page - 1) * limit
+
+    pull_requests = (
+        query
+        .order_by(PullRequest.last_synced_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+    return {
+        "total_records": total_records,
+        "page": page,
+        "limit": limit,
+        "pull_requests": pull_requests
     }

@@ -11,7 +11,6 @@ app = FastAPI(
     description="GitHub Pull Request Monitoring Platform"
 )
 
-# Allow the local React development server to access this API.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
