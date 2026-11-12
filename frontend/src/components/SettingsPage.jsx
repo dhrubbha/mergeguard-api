@@ -14,7 +14,7 @@ import {
   AlertCircle,
   GitPullRequest,
 } from "lucide-react";
-import { getHealthCheck, getApiConfig, triggerTestWebhook } from "../services/api";
+import { getHealthCheck, getApiConfig, triggerTestWebhook, getApiBaseUrl, setApiBaseUrl } from "../services/api";
 
 export default function SettingsPage({ apiBaseUrl = "http://localhost:8000", onWebhookSent }) {
   const [config, setConfig] = useState(null);
@@ -23,6 +23,8 @@ export default function SettingsPage({ apiBaseUrl = "http://localhost:8000", onW
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedSecret, setCopiedSecret] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
+  const [customApiUrl, setCustomApiUrl] = useState(getApiBaseUrl());
+  const [savedApiUrl, setSavedApiUrl] = useState(false);
 
   // Webhook Simulator state
   const [simAction, setSimAction] = useState("opened");
@@ -66,6 +68,14 @@ export default function SettingsPage({ apiBaseUrl = "http://localhost:8000", onW
     navigator.clipboard?.writeText(defaultSecret);
     setCopiedSecret(true);
     setTimeout(() => setCopiedSecret(false), 2000);
+  };
+
+  const handleSaveApiUrl = () => {
+    setApiBaseUrl(customApiUrl);
+    setSavedApiUrl(true);
+    setTimeout(() => setSavedApiUrl(false), 2000);
+    loadDiagnostics();
+    if (onWebhookSent) onWebhookSent();
   };
 
   const handleSendWebhook = async (e) => {
@@ -127,6 +137,30 @@ export default function SettingsPage({ apiBaseUrl = "http://localhost:8000", onW
             </div>
             <span className="field-hint">
               The endpoint where GitHub sends POST payloads when PR events occur.
+            </span>
+          </div>
+
+          {/* Backend API Server URL Field */}
+          <div className="settings-field-group">
+            <label>Backend API Server URL</label>
+            <div className="copy-input-row">
+              <input
+                type="text"
+                value={customApiUrl}
+                onChange={(e) => setCustomApiUrl(e.target.value)}
+                placeholder="e.g. http://localhost:8000 or https://api.yourdomain.com"
+              />
+              <button
+                type="button"
+                className="copy-button"
+                onClick={handleSaveApiUrl}
+              >
+                {savedApiUrl ? <Check size={15} /> : <CheckCircle size={15} />}
+                {savedApiUrl ? "Saved" : "Save URL"}
+              </button>
+            </div>
+            <span className="field-hint">
+              Target FastAPI server used for pull request data and webhook monitoring.
             </span>
           </div>
 

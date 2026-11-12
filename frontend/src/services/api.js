@@ -1,11 +1,28 @@
-// Base URL configuration: uses Vite environment variable or falls back to http://localhost:8000
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+// Base URL configuration: uses custom saved URL, Vite env variable, or http://localhost:8000
+export function getApiBaseUrl() {
+  if (typeof window !== "undefined" && window.localStorage) {
+    const customUrl = localStorage.getItem("mergeguard_api_base_url");
+    if (customUrl) return customUrl.replace(/\/$/, "");
+  }
+  return import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+}
+
+export function setApiBaseUrl(url) {
+  if (typeof window !== "undefined" && window.localStorage) {
+    if (!url || !url.trim()) {
+      localStorage.removeItem("mergeguard_api_base_url");
+    } else {
+      localStorage.setItem("mergeguard_api_base_url", url.trim().replace(/\/$/, ""));
+    }
+  }
+}
 
 /**
  * Helper to perform fetch requests with error handling
  */
 async function request(endpoint, options = {}) {
-  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const baseUrl = getApiBaseUrl();
+  const url = endpoint.startsWith("http") ? endpoint : `${baseUrl}${endpoint}`;
   try {
     const response = await fetch(url, {
       headers: {
