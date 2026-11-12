@@ -148,13 +148,13 @@ def test_valid_pull_request_webhook(client):
 
     assert data["processed_event"]["merged"] is True
 
-    # Verify that the database session was used.
-    mock_db.add.assert_called_once()
+    # Verify that the database session was used (for event and pull request record).
+    assert mock_db.add.call_count == 2
     mock_db.commit.assert_called_once()
     mock_db.refresh.assert_called_once()
 
     # Inspect the object passed to the database.
-    saved_event = mock_db.add.call_args[0][0]
+    saved_event = mock_db.add.call_args_list[0][0][0]
 
     assert isinstance(saved_event, PullRequestEvent)
     assert saved_event.repository == "Cisco/demo-project"

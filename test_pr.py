@@ -53,11 +53,12 @@ headers = {
     "X-Hub-Signature-256": f"sha256={signature}"
 }
 
-response = requests.post(
-    url,
-    data=body,
-    headers=headers
-)
+if __name__ == "__main__":
+    response = requests.post(
+        url,
+        data=body,
+        headers=headers
+    )
 
-print("Status:", response.status_code)
-print("Response:", response.json())
+    print("Status:", response.status_code)
+    print("Response:", response.json())

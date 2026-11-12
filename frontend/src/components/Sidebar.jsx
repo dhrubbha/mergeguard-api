@@ -21,7 +21,12 @@ const navigation = [
 export default function Sidebar({ activePage, setActivePage }) {
   return (
     <aside className="sidebar">
-      <div className="brand">
+      <div
+        className="brand clickable"
+        onClick={() => setActivePage("Overview")}
+        role="button"
+        title="Go to Overview"
+      >
         <div className="brand-icon">
           <ShieldCheck size={23} />
         </div>
