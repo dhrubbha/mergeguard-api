@@ -102,7 +102,7 @@ function Overview({
       {/* Welcome Section */}
       <div className="welcome-section">
         <div>
-          <h2>{greeting}, Admin 👋</h2>
+          <h2>{greeting}, Admin </h2>
           <p>Here's what's happening with your repositories today.</p>
         </div>
 
