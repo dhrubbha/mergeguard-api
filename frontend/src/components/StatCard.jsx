@@ -1,10 +1,10 @@
-
 import {
   GitPullRequest,
   GitBranch,
   GitMerge,
   Clock,
   TrendingUp,
+  TrendingDown,
 } from "lucide-react";
 
 const iconMap = {
@@ -15,7 +15,8 @@ const iconMap = {
 };
 
 export default function StatCard({ stat }) {
-  const Icon = iconMap[stat.icon];
+  const Icon = iconMap[stat.icon] || GitPullRequest;
+  const isNegative = String(stat.change || "").startsWith("-");
 
   return (
     <div className="stat-card">
@@ -30,12 +31,12 @@ export default function StatCard({ stat }) {
       <div className="stat-value">{stat.value}</div>
 
       <div className="stat-footer">
-        <span className="stat-change">
-          <TrendingUp size={14} />
-          {stat.change}
+        <span className={`stat-change ${isNegative ? "negative" : "positive"}`}>
+          {isNegative ? <TrendingDown size={14} /> : <TrendingUp size={14} />}
+          {stat.change || "+0.0%"}
         </span>
 
-        <span>vs last week</span>
+        <span>vs previous week</span>
       </div>
     </div>
   );

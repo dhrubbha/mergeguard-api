@@ -59,16 +59,24 @@ def sync_pull_request(
     # Update the latest PR information.
     pr_record.pr_title = pr_data.get("title")
 
-    pr_record.author = (
-        (pr_data.get("user") or {}).get("login")
-    )
+    author_val = pr_data.get("user")
+    if isinstance(author_val, dict):
+        pr_record.author = author_val.get("login")
+    elif isinstance(author_val, str):
+        pr_record.author = author_val
+    elif pr_data.get("author"):
+        pr_record.author = pr_data.get("author")
 
     pr_record.state = state
     pr_record.merged = merged
 
-    pr_record.merged_by = (
-        (pr_data.get("merged_by") or {}).get("login")
-    )
+    merged_by_val = pr_data.get("merged_by")
+    if isinstance(merged_by_val, dict):
+        pr_record.merged_by = merged_by_val.get("login")
+    elif isinstance(merged_by_val, str):
+        pr_record.merged_by = merged_by_val
+    else:
+        pr_record.merged_by = None
 
     pr_record.html_url = pr_data.get("html_url")
 

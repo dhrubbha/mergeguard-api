@@ -1,12 +1,13 @@
+from urllib.parse import unquote
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 from backend.app.config import settings
 
 
-DATABASE_URL= settings.DATABASE_URL
+DATABASE_URL = unquote(settings.DATABASE_URL) if settings.DATABASE_URL else ""
 
-engine=create_engine(
+engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True
 )

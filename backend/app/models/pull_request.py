@@ -9,7 +9,7 @@ class PullRequestEvent(Base):
 
     __tablename__ = "pull_request_events"
 
-    id = Column(Integer, primary_key=True, index=Text)
+    id = Column(Integer, primary_key=True, index=True)
 
     repository = Column(String(255), nullable=False)
     pr_number = Column(Integer, nullable=False)
